@@ -1,18 +1,16 @@
-from django.test import TestCase
-
-# Create your tests here.
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from main.models import Habit
 from users.models import User
 
 # Create your tests here.
+
 
 class HabitTestCase(APITestCase):
 
     def setUp(self) -> None:
         self.client = APIClient()
-        self.user = User.objects.create(email='test@email.com', password='testpassword')
+        self.user = User.objects.create(email='test@email.com',
+                                        password='testpassword')
         self.client.force_authenticate(user=self.user)
 
     def test_create_habit(self):

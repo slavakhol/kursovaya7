@@ -1,9 +1,7 @@
 import json
 from datetime import datetime
-
 from django_celery_beat.models import IntervalSchedule, PeriodicTask
 from rest_framework import viewsets, generics
-
 from main.models import Habit
 from main.paginators import MaterialPaginator
 from main.permissions import IsOwner
@@ -31,10 +29,15 @@ class HabitViewSet(viewsets.ModelViewSet):
         new_habit.save()
 
         if new_habit.periodity == 'daily':
-            interval = IntervalSchedule.objects.create(every=1, period=IntervalSchedule.DAYS)
+            interval = IntervalSchedule.objects.create(
+                every=1,
+                period=IntervalSchedule.DAYS
+            )
         elif new_habit.periodity == 'weekly':
-            interval = IntervalSchedule.objects.create(every=7, period=IntervalSchedule.DAYS)
-
+            interval = IntervalSchedule.objects.create(
+                every=7,
+                period=IntervalSchedule.DAYS
+            )
 
         habit_time = new_habit.time
         start_time = datetime.combine(datetime.now(), habit_time)
@@ -47,9 +50,11 @@ class HabitViewSet(viewsets.ModelViewSet):
 
         )
 
+
 class PublicHabitListAPIView(generics.ListAPIView):
     serializer_class = HabitSerializer
     queryset = Habit.objects.filter(is_public=True)
+
 
 class PersonalHabitListAPIView(generics.ListAPIView):
     serializer_class = HabitSerializer
@@ -58,4 +63,3 @@ class PersonalHabitListAPIView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return Habit.objects.filter(owner=user)
-

@@ -10,7 +10,32 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       PGDATA: /var/lib/postgresql/data/pgdata
-      
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: .
+    command: celery -A kursovaya7 worker -l INFO
+    depends_on:
+        - db
+        - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+  celery-beat:
+    build: .
+    command: celery -A kursovaya7 beat -l INFO
+    depends_on:
+      - db
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
@@ -18,5 +43,11 @@ services:
       - '8000:8000'
     depends_on:
       - db
+      - redis
+    environment:
+      - DATABASE_URL=127.0.0.1
+      - DJANGO_ALLOWED_HOST=127.0.0.1
+
+
 
 

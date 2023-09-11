@@ -10,11 +10,21 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       PGDATA: /var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   celery:
     build: .
@@ -25,6 +35,11 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    healthcheck:
+      test: [ "CMD", "celery", "inspect", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   celery-beat:
     build: .
